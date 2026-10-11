@@ -1,0 +1,31 @@
+# Bibliothèques de l'image des TP (JupyterLab).
+# Les outils principaux sont figés sur les versions vérifiées sur PyPI le 11 octobre 2026.
+# Les autres sont bornés ; le premier build écrit la liste exacte (requirements.lock, artefact du workflow).
+# Après la répétition, on recopie requirements.lock ici pour tout figer.
+
+# Jupyter et données
+jupyterlab>=4.4,<5
+pandas==3.0.5
+pyarrow>=21,<26
+matplotlib>=3.10,<4
+
+# Versionner les données (jour 1)
+dvc==3.67.1
+
+# Suivre les expériences, dériver, optimiser (jours 2 et 4)
+mlflow==3.17.0
+scikit-learn>=1.7,<2
+optuna==5.0.0
+evidently==0.7.23
+
+# Moteurs de requêtes (jour 3)
+duckdb>=1.3,<2
+
+# IA responsable (jour 5)
+shap>=0.48
+lime>=0.2.0.1
+interpret>=0.7
+
+# Spark et Delta Lake (jour 5) : paire déclarée compatible par la documentation de Delta Lake
+pyspark>=4.1,<4.2
+delta-spark>=4.3,<4.4

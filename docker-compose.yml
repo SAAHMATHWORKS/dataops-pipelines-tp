@@ -1,0 +1,19 @@
+# Environnement des TP de la formation DataOps.
+# Démarrage : ./scripts/demarrer.sh  (écrit le fichier .env, puis lance les services)
+# Les services MLflow et Airflow seront ajoutés pour les jours 2 et 3.
+name: dataops
+
+services:
+  jupyter:
+    image: ghcr.io/saahmathworks/dataops-lab:2026.12
+    build: ./docker/lab
+    # Même UID et GID que l'utilisateur de la VM : les fichiers créés restent les siens.
+    user: "${UID_HOTE:-1000}:${GID_HOTE:-1000}"
+    environment:
+      HOME: /home/lab/projet/.home
+      JUPYTER_RUNTIME_DIR: /tmp/jupyter
+    volumes:
+      - .:/home/lab/projet
+    ports:
+      - "127.0.0.1:8888:8888"
+    restart: unless-stopped

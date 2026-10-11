@@ -1,0 +1,6 @@
+# Créé par scripts/demarrer.sh : identifiants numériques de l'utilisateur de la VM
+.env
+# Dossier personnel du conteneur (configuration Git, Jupyter)
+.home/
+__pycache__/
+.ipynb_checkpoints/
