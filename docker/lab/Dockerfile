@@ -23,4 +23,4 @@ EXPOSE 8888
 
 # Pas de jeton : le port n'est ouvert que sur la VM elle-même (127.0.0.1, voir docker-compose.yml).
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", \
-     "--ServerApp.token=", "--ServerApp.password=", "--ServerApp.root_dir=/home/lab/projet"]
+     "--IdentityProvider.token=", "--ServerApp.root_dir=/home/lab/projet"]
