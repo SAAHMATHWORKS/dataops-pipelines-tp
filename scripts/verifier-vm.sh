@@ -64,6 +64,7 @@ verifier_url() {
 }
 verifier_url "GitHub"                 https://github.com
 verifier_url "Registre GitHub ghcr.io" https://ghcr.io/v2/
+verifier_url "Données des taxis de New York (jour 3)" https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
 verifier_url "Docker Hub"             https://registry-1.docker.io/v2/
 verifier_url "PyPI"                   https://pypi.org/simple/pip/
 verifier_url "Fichiers PyPI"          https://files.pythonhosted.org/

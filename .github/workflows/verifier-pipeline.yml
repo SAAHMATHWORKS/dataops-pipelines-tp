@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - name: Rejouer les jours 1 et 2 dans l'image des TP
+      - name: Rejouer les jours 1 à 3 dans l'image des TP
         run: |
           set -o pipefail
           docker run --rm --add-host mlflow:127.0.0.1 \

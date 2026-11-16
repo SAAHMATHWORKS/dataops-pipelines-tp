@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rejoue le parcours des jours 1 et 2 dans l'image des TP, avec un vrai serveur MLflow,
+# Rejoue le parcours des jours 1 à 3 dans l'image des TP, avec un vrai serveur MLflow,
 # et vérifie les chiffres annoncés dans le support. Lancé par GitHub Actions
 # (.github/workflows/verifier-pipeline.yml), ou à la main, depuis la racine du dépôt :
 #
@@ -209,6 +209,34 @@ unset AVANT_BLOC
 
 titre "Jour 2 après-midi : évaluation"
 support $SUPPORT/j2-apres-midi/06-*.md
+
+titre "Jour 3 matin : données des taxis (dvc import-url)"
+git switch tp-dvc
+git status --short
+mkdir -p data/taxis
+dvc import-url https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet data/taxis/ \
+  || echec "import des courses de taxi"
+dvc import-url https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv data/taxis/ \
+  || echec "import des zones de taxi"
+md5sum data/taxis/yellow_tripdata_2024-01.parquet data/taxis/taxi_zone_lookup.csv
+cat data/taxis/yellow_tripdata_2024-01.parquet.dvc
+git add data/taxis/*.dvc data/taxis/.gitignore
+git commit -q -m "Données externes : taxis de New York, janvier 2024"
+python - <<'PY' || echec "empreintes des taxis"
+import hashlib
+attendu = {
+    "data/taxis/yellow_tripdata_2024-01.parquet": "10dff36f5a2fc325274438bf361c70f0",
+    "data/taxis/taxi_zone_lookup.csv": "c6064b7c144c716450641f769659d178",
+}
+for chemin, md5 in attendu.items():
+    obtenu = hashlib.md5(open(chemin, "rb").read()).hexdigest()
+    assert obtenu == md5, f"{chemin} : {obtenu} au lieu de {md5} (la TLC a-t-elle republié le fichier ?)"
+print("empreintes des taxis conformes au support du jour 3")
+PY
+
+titre "Jour 3 matin : cellules du support"
+support $SUPPORT/j3-matin/index.md $SUPPORT/j3-matin/0[1-5]-*.md
+support $SUPPORT/j3-matin/06-*.md
 
 titre "Registre en fin de parcours"
 python - <<'PY'

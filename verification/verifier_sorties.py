@@ -7,7 +7,7 @@ Variables d'environnement facultatives :
 - SAUTER : expression régulière ; les blocs dont le code y correspond ne sont pas exécutés ;
 - AVANT_BLOC : "motif du titre::commande" (plusieurs règles séparées par ;;) ;
 - GARDER_DATA : ne pas effacer le dossier data/ à la fin.
-Les identifiants de runs MLflow (32 caractères hexadécimaux) sont remplacés par <id> avant comparaison.
+Les identifiants de runs MLflow (32 caractères hexadécimaux) et les durées en secondes sont neutralisés avant comparaison.
 """
 import contextlib
 import io
@@ -60,7 +60,8 @@ for fichier in fichiers:
             attente = (fichier.name, titre, sortie.getvalue())
         elif langue == "plaintext" and "Sortie attendue" in info and attente:
             nom, titre, obtenu = attente
-            norm = lambda t: "\n".join(re.sub(r"\b[0-9a-f]{32}\b", "<id>", l).rstrip() for l in t.strip("\n").splitlines())
+            # Les identifiants de runs MLflow et les durées (« 0.13 s ») varient d'une exécution à l'autre.
+            norm = lambda t: "\n".join(re.sub(r"\b\d+\.\d+ s\b", "<durée> s", re.sub(r"\b[0-9a-f]{32}\b", "<id>", l)).rstrip() for l in t.strip("\n").splitlines())
             if norm(obtenu) != norm(code):
                 erreurs += 1
                 print(f"\n=== DIFFÉRENCE · {nom} · {titre}\n--- attendu\n{code}--- obtenu\n{obtenu}")
