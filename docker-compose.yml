@@ -1,7 +1,7 @@
 # Environnement des TP de la formation DataOps.
 # Démarrage : ./scripts/demarrer.sh   (écrit le fichier .env, puis lance JupyterLab)
-# Jour 2, en plus : docker compose up -d mlflow   (suivi des expériences, port 5000)
-# Le service Airflow sera ajouté pour le jour 3.
+# Jour 2, en plus : docker compose up -d mlflow    (suivi des expériences, port 5000)
+# Jour 3, en plus : docker compose up -d airflow   (orchestration, port 8080)
 name: dataops
 
 services:
@@ -17,6 +17,10 @@ services:
       MLFLOW_TRACKING_URI: http://mlflow:5000
     volumes:
       - .:/home/lab/projet
+      # L'identité de l'utilisateur de la VM (écrite par scripts/identite.sh) : sans elle,
+      # DVC, Airflow et Spark refusent un UID qui n'a pas de nom.
+      - ./.home/passwd:/etc/passwd:ro
+      - ./.home/group:/etc/group:ro
     ports:
       - "127.0.0.1:8888:8888"
     restart: unless-stopped
@@ -40,6 +44,40 @@ services:
       --host 0.0.0.0 --port 5000
     volumes:
       - .:/home/lab/projet
+      # L'identité de l'utilisateur de la VM (écrite par scripts/identite.sh) : sans elle,
+      # DVC, Airflow et Spark refusent un UID qui n'a pas de nom.
+      - ./.home/passwd:/etc/passwd:ro
+      - ./.home/group:/etc/group:ro
     ports:
       - "127.0.0.1:5000:5000"
+    restart: unless-stopped
+
+  # Jour 3 : Airflow en mode « standalone » : serveur d'API et interface, ordonnanceur,
+  # processeur de DAG et triggerer dans un seul conteneur, base SQLite dans .airflow/.
+  # Parfait pour une VM de formation, jamais pour la production (voir le support).
+  airflow:
+    image: ghcr.io/saahmathworks/dataops-lab:2026.12-airflow
+    build: ./docker/airflow
+    user: "${UID_HOTE:-1000}:${GID_HOTE:-1000}"
+    environment:
+      HOME: /home/lab/projet/.home
+      AIRFLOW_HOME: /home/lab/projet/.airflow
+      AIRFLOW__CORE__DAGS_FOLDER: /home/lab/projet/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      # Pas d'identifiant à saisir : le port n'est ouvert que sur la VM elle-même (127.0.0.1).
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "True"
+      # Les tâches du pipeline parlent au serveur MLflow, comme JupyterLab.
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      # Une seule couche de nouvelles tentatives : celle d'Airflow, visible dans l'interface.
+      # (Par défaut, le client MLflow réessaie seul pendant plusieurs minutes.)
+      MLFLOW_HTTP_REQUEST_MAX_RETRIES: "1"
+    command: airflow standalone
+    volumes:
+      - .:/home/lab/projet
+      # L'identité de l'utilisateur de la VM (écrite par scripts/identite.sh) : sans elle,
+      # DVC, Airflow et Spark refusent un UID qui n'a pas de nom.
+      - ./.home/passwd:/etc/passwd:ro
+      - ./.home/group:/etc/group:ro
+    ports:
+      - "127.0.0.1:8080:8080"
     restart: unless-stopped

@@ -3,8 +3,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# 1. Le conteneur doit écrire dans ce dossier avec les droits de l'utilisateur de la VM.
-printf "UID_HOTE=%s\nGID_HOTE=%s\n" "$(id -u)" "$(id -g)" > .env
+# 1. Les conteneurs écrivent dans ce dossier avec les droits de l'utilisateur de la VM :
+#    son UID et son GID (fichier .env), et son identité dans les conteneurs (voir identite.sh).
+./scripts/identite.sh
 mkdir -p .home .mlflow .airflow data notebooks
 
 # 2. Télécharge l'image si besoin, puis démarre JupyterLab en arrière-plan.

@@ -31,10 +31,12 @@ titre "Versions"
 python -c "import sys, pandas, sklearn, mlflow, dvc, optuna, evidently; print(sys.version.split()[0], '| pandas', pandas.__version__, '| scikit-learn', sklearn.__version__, '| mlflow', mlflow.__version__, '| dvc', dvc.__version__, '| optuna', optuna.__version__, '| evidently', evidently.__version__)"
 
 titre "Serveur MLflow (comme le service mlflow de docker-compose.yml)"
-mkdir -p /tmp/mlflow
+# Même emplacement que le service mlflow de docker-compose.yml (.mlflow/ dans le dépôt) :
+# verifier_airflow.sh, lancé ensuite avec docker compose, retrouve ainsi le registre du jour 2.
+mkdir -p /tmp/mlflow .mlflow
 MLFLOW_SERVER_ALLOWED_HOSTS="mlflow:5000,localhost:*,127.0.0.1:*" \
-  mlflow server --backend-store-uri sqlite:////tmp/mlflow/mlflow.db \
-  --artifacts-destination /tmp/mlflow/artifacts --host 0.0.0.0 --port 5000 > /tmp/mlflow-serveur.log 2>&1 &
+  mlflow server --backend-store-uri sqlite:///$RACINE/.mlflow/mlflow.db \
+  --artifacts-destination $RACINE/.mlflow/artifacts --host 0.0.0.0 --port 5000 > /tmp/mlflow-serveur.log 2>&1 &
 for _ in $(seq 1 60); do curl -s -o /dev/null http://127.0.0.1:5000/health && break; sleep 2; done
 curl -s -o /dev/null -w "Host mlflow:5000 -> HTTP %{http_code}\n" http://mlflow:5000/health || echec "serveur MLflow injoignable"
 

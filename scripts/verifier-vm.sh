@@ -84,6 +84,11 @@ if docker info >/dev/null 2>&1; then
   else
     info "image des TP pas encore visible sur ghcr.io (normal tant qu'elle n'est pas publiée)"
   fi
+  if docker manifest inspect ghcr.io/saahmathworks/dataops-lab:2026.12-airflow >/dev/null 2>&1; then
+    ok "image Airflow des TP (jour 3) visible sur ghcr.io"
+  else
+    info "image Airflow des TP pas encore visible sur ghcr.io (normal tant qu'elle n'est pas publiée)"
+  fi
 fi
 TMP_CLONE=$(mktemp -d)
 if git clone -q --depth 1 https://github.com/SAAHMATHWORKS/dataops-pipelines-tp.git "$TMP_CLONE/depot" 2>/dev/null; then

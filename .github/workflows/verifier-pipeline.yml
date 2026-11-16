@@ -8,7 +8,9 @@ on:
     paths:
       - "colisvert/**"
       - "pipeline/**"
+      - "solutions/**"
       - "verification/**"
+      - "docker/airflow/**"
       - "MLproject"
       - "docker-compose.yml"
       - ".github/workflows/verifier-pipeline.yml"
@@ -20,19 +22,32 @@ permissions:
 jobs:
   verifier:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
-      - name: Rejouer les jours 1 à 3 dans l'image des TP
+      - name: Rejouer les jours 1 à 3 matin dans l'image des TP
         run: |
           set -o pipefail
-          docker run --rm --add-host mlflow:127.0.0.1 \
+          # Avec l'UID de l'utilisateur et son identité, comme sur la VM (docker-compose.yml).
+          ./scripts/identite.sh
+          docker run --rm --add-host mlflow:127.0.0.1 --user "$(id -u):$(id -g)" \
             -v "$PWD":/home/lab/projet -w /home/lab/projet \
+            -v "$PWD/.home/passwd":/etc/passwd:ro -v "$PWD/.home/group":/etc/group:ro \
             ghcr.io/saahmathworks/dataops-lab:2026.12 \
             bash verification/verifier_pipeline.sh 2>&1 | tee rapport-verification.txt
-      - name: Garder le rapport
+      - name: Rejouer le jour 3 après-midi (Airflow) avec docker compose, comme sur la VM
+        run: |
+          set -o pipefail
+          ./scripts/identite.sh
+          mkdir -p .mlflow .airflow dags
+          docker compose build airflow
+          docker compose up -d mlflow airflow
+          bash verification/verifier_airflow.sh 2>&1 | tee rapport-airflow.txt
+      - name: Garder les rapports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rapport-verification
-          path: rapport-verification.txt
+          path: |
+            rapport-verification.txt
+            rapport-airflow.txt
