@@ -24,14 +24,15 @@ af() { docker compose exec -T airflow "$@"; }
 runs() { af airflow dags list-runs "$1" -o json 2>/dev/null | python3 verification/airflow_runs.py "${@:2}"; }
 
 cellules() {
-  # cellules <fichiers…> : exécute les cellules Python des pages du support dans le service jupyter.
-  if [ -d "$SUPPORT" ]; then
+  # cellules <fichiers…> : exécute les cellules Python des pages du support dans le service jupyter,
+  # si le dossier de la demi-journée est présent.
+  if [ -d "$(dirname "$1")" ]; then
     # Les blocs de code des DAG et les extraits de scripts ne s'exécutent pas dans JupyterLab.
     docker compose run --rm -T -e GARDER_DATA=1 -e SAUTER='airflow\.sdk|def main\(|@dag\(' jupyter \
       python verification/verifier_sorties.py . "$@" \
       || { echo "ÉCHEC (cellules) : $*"; ECHECS_CELLULES=$((ECHECS_CELLULES + 1)); }
   else
-    echo "(pas de pages du support dans $SUPPORT : cellules non vérifiées)"
+    echo "(pas de pages du support dans $(dirname "$1") : cellules non vérifiées)"
   fi
 }
 

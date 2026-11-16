@@ -77,7 +77,8 @@ git commit -q -am "Données v2 : 9 semaines"
 dvc push
 
 titre "Jour 2 matin : cellules des notions 0 à 4"
-if [ -d "$SUPPORT" ]; then
+# Sans les pages du J2 matin, on régénère les données de 8 semaines comme le ferait leur Cellule 0.
+if [ -d "$SUPPORT/j2-matin" ]; then
   support $SUPPORT/j2-matin/index.md $SUPPORT/j2-matin/01-*.md $SUPPORT/j2-matin/02-*.md \
           $SUPPORT/j2-matin/03-*.md $SUPPORT/j2-matin/04-*.md
 else
