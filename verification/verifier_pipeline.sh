@@ -47,11 +47,14 @@ curl -s -o /dev/null -w "défaut, Host localhost:5002 -> HTTP %{http_code}\n" -H
 curl -s -o /dev/null -w "défaut, Host mlflow:5002    -> HTTP %{http_code}\n" -H "Host: mlflow:5002" http://127.0.0.1:5002/api/2.0/mlflow/experiments/search?max_results=1
 
 support() {
-  # support <fichiers…> : exécute les cellules Python des pages du support, si elles sont présentes.
-  if [ -d "$SUPPORT" ]; then
+  # support <fichiers…> : exécute les cellules Python des pages du support, si le dossier
+  # de la demi-journée est présent (on peut ne copier qu'une demi-journée pour l'essayer).
+  local dossier
+  dossier=$(dirname "$1")
+  if [ -d "$dossier" ]; then
     python verification/verifier_sorties.py . "$@" || echec "cellules du support : $*"
   else
-    echo "(pas de pages du support dans $SUPPORT : cellules non vérifiées)"
+    echo "(pas de pages du support dans $dossier : cellules non vérifiées)"
   fi
 }
 
@@ -239,6 +242,9 @@ PY
 titre "Jour 3 matin : cellules du support"
 support $SUPPORT/j3-matin/index.md $SUPPORT/j3-matin/0[1-5]-*.md
 support $SUPPORT/j3-matin/06-*.md
+
+titre "Jour 4 matin : cellules du support (indépendantes de l'état du dépôt)"
+support $SUPPORT/j4-matin/index.md $SUPPORT/j4-matin/0[1-6]-*.md
 
 titre "Registre en fin de parcours"
 python - <<'PY'
