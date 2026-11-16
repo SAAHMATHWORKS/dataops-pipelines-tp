@@ -1,0 +1,38 @@
+# Rejoue le parcours des TP dans l'image des TP, avec un vrai serveur MLflow, et vérifie
+# que les chiffres annoncés dans le support sont toujours obtenus (voir verification/).
+# Se lance à chaque modification du code, des données ou de la vérification, ou à la main.
+name: Vérification du pipeline
+
+on:
+  push:
+    paths:
+      - "colisvert/**"
+      - "pipeline/**"
+      - "verification/**"
+      - "MLproject"
+      - "docker-compose.yml"
+      - ".github/workflows/verifier-pipeline.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rejouer les jours 1 et 2 dans l'image des TP
+        run: |
+          set -o pipefail
+          docker run --rm --add-host mlflow:127.0.0.1 \
+            -v "$PWD":/home/lab/projet -w /home/lab/projet \
+            ghcr.io/saahmathworks/dataops-lab:2026.12 \
+            bash verification/verifier_pipeline.sh 2>&1 | tee rapport-verification.txt
+      - name: Garder le rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-verification
+          path: rapport-verification.txt

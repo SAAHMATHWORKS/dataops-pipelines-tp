@@ -1,6 +1,14 @@
 # Créé par scripts/demarrer.sh : identifiants numériques de l'utilisateur de la VM
 .env
-# Dossier personnel du conteneur (configuration Git, Jupyter)
+# Dossier personnel du conteneur (configuration Git, Jupyter, stockage DVC du TP)
 .home/
 __pycache__/
 .ipynb_checkpoints/
+# Jour 2 : identifiant du dernier run MLflow, propre à chaque machine
+models/run_id.txt
+# Jour 2 : rapports de dérive produits par les notebooks
+rapports/
+# Bases locales de MLflow et d'Airflow (jours 2 et 3)
+.mlflow/
+.airflow/
+mlruns/

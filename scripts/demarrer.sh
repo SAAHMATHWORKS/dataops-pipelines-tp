@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 
 # 1. Le conteneur doit écrire dans ce dossier avec les droits de l'utilisateur de la VM.
 printf "UID_HOTE=%s\nGID_HOTE=%s\n" "$(id -u)" "$(id -g)" > .env
-mkdir -p .home data notebooks
+mkdir -p .home .mlflow .airflow data notebooks
 
 # 2. Télécharge l'image si besoin, puis démarre JupyterLab en arrière-plan.
 docker compose up -d jupyter

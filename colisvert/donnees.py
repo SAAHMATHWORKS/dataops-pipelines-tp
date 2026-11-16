@@ -156,6 +156,58 @@ def generer_livraisons_brutes(graine: int = 99) -> list[dict]:
     return resultat
 
 
+def generer_livraisons_decembre(graine: int = 1226) -> list[dict]:
+    """Les colis de décembre : 4 semaines, du lundi 30 novembre au dimanche 27 décembre 2026.
+
+    Même structure et mêmes colonnes que generer_livraisons, mais le monde a changé :
+    - plus de colis (fêtes de fin d'année) ;
+    - des colis nettement plus lourds (cadeaux) : de 0,5 à 38,4 kg au lieu de 0,5 à 30,4 kg ;
+    - de la pluie un jour sur deux au lieu de trois sur dix.
+    La formule du délai réel est la même : seules les données d'entrée ont dérivé.
+    """
+    hasard = Hasard(graine)
+    premier_jour = datetime.date(2026, 11, 30)  # un lundi
+    entrepots = ["Lille"] * 3 + ["Lyon"] * 3 + ["Nantes"] * 2 + ["Toulouse"] * 2
+    lignes = []
+    for jour in range(28):
+        date = premier_jour + datetime.timedelta(days=jour)
+        semaine = date.weekday() < 5
+        nombre = 120 + hasard.entier(51) if semaine else 45 + hasard.entier(26)
+        for _ in range(nombre):
+            entrepot = hasard.choix(entrepots)
+            client = "pro" if hasard.entier(4) == 0 else "particulier"
+            creneau = hasard.choix(["matin", "apres-midi", "soir"])
+            distance = 5 + hasard.entier(296)
+            poids = round(0.5 + hasard.entier(380) / 10, 1)   # cadeaux : jusqu'à 38,4 kg
+            meteo = "pluie" if hasard.entier(10) < 5 else "sec"
+            promis = 24 if distance <= 150 else 48
+            reel = (
+                1
+                + distance // 12
+                + int(poids) // 6
+                + (8 if meteo == "pluie" else 0)
+                + (6 if entrepot == "Lille" else 0)
+                + (4 if creneau == "soir" else 0)
+                + hasard.entier(14)
+            )
+            lignes.append(
+                {
+                    "id_colis": f"DEC{len(lignes) + 1:05d}",
+                    "date_expedition": date.isoformat(),
+                    "entrepot": entrepot,
+                    "client": client,
+                    "creneau": creneau,
+                    "distance_km": distance,
+                    "poids_kg": poids,
+                    "meteo": meteo,
+                    "delai_promis_h": promis,
+                    "delai_reel_h": reel,
+                    "en_retard": int(reel > promis),
+                }
+            )
+    return lignes
+
+
 def generer_arrivees(graine: int = 7) -> list[dict]:
     """L'heure d'arrivée, chaque matin, du fichier des expéditions de la veille.
 

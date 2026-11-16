@@ -1,0 +1,11 @@
+name: colisvert-retards
+
+# Le projet s'exécute dans l'environnement courant (option --env-manager local) :
+# celui de l'image des TP, où tout est déjà installé.
+
+entry_points:
+  main:
+    parameters:
+      C: {type: float, default: 1.0}
+      class_weight: {type: string, default: none}
+    command: "python -m pipeline.projet --C {C} --class-weight {class_weight}"

@@ -1,6 +1,7 @@
 # Environnement des TP de la formation DataOps.
-# Démarrage : ./scripts/demarrer.sh  (écrit le fichier .env, puis lance les services)
-# Les services MLflow et Airflow seront ajoutés pour les jours 2 et 3.
+# Démarrage : ./scripts/demarrer.sh   (écrit le fichier .env, puis lance JupyterLab)
+# Jour 2, en plus : docker compose up -d mlflow   (suivi des expériences, port 5000)
+# Le service Airflow sera ajouté pour le jour 3.
 name: dataops
 
 services:
@@ -12,8 +13,33 @@ services:
     environment:
       HOME: /home/lab/projet/.home
       JUPYTER_RUNTIME_DIR: /tmp/jupyter
+      # Jour 2 : l'adresse du serveur MLflow, vue depuis ce conteneur (nom du service).
+      MLFLOW_TRACKING_URI: http://mlflow:5000
     volumes:
       - .:/home/lab/projet
     ports:
       - "127.0.0.1:8888:8888"
+    restart: unless-stopped
+
+  # Jour 2 : le serveur MLflow. Base SQLite et artefacts dans .mlflow/, sur la VM.
+  # En production : une vraie base (PostgreSQL) et un stockage objet (S3, Azure Blob).
+  mlflow:
+    image: ghcr.io/saahmathworks/dataops-lab:2026.12
+    build: ./docker/lab
+    user: "${UID_HOTE:-1000}:${GID_HOTE:-1000}"
+    environment:
+      HOME: /home/lab/projet/.home
+      # MLflow refuse par défaut les requêtes adressées à un nom d'hôte inconnu
+      # (protection contre le « DNS rebinding ») : on autorise le nom du service,
+      # utilisé par JupyterLab, et localhost, utilisé par le navigateur de la VM.
+      MLFLOW_SERVER_ALLOWED_HOSTS: "mlflow:5000,localhost:*,127.0.0.1:*"
+    command: >-
+      mlflow server
+      --backend-store-uri sqlite:////home/lab/projet/.mlflow/mlflow.db
+      --artifacts-destination /home/lab/projet/.mlflow/artifacts
+      --host 0.0.0.0 --port 5000
+    volumes:
+      - .:/home/lab/projet
+    ports:
+      - "127.0.0.1:5000:5000"
     restart: unless-stopped
