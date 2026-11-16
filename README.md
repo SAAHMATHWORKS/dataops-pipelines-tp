@@ -32,6 +32,7 @@ machine elle-même (`127.0.0.1`) : JupyterLab ne demande donc pas de jeton.
 | `dags/` | Jour 3 : vos DAG Airflow |
 | `solutions/airflow/` | Jour 3 : les corrigés des DAG |
 | `MLproject` | Jour 2 : la description du projet MLflow (`mlflow run .`) |
+| `service/` | Jour 4 : le service de prédiction de ColisVert, un modèle MLflow PyFunc qui combine plusieurs modèles |
 | `notebooks/` | Vos notebooks, un par demi-journée |
 | `data/` | Les données générées (non versionnées par Git) |
 | `docker/lab/` | L'image des TP : JupyterLab, Python 3.12, Java 17, Git et les bibliothèques |
@@ -81,4 +82,6 @@ d'hyperparamètres, taxis de New York, avec l'UID d'un utilisateur ordinaire com
 Puis `verification/verifier_airflow.sh` démarre MLflow et Airflow avec `docker compose` et rejoue le
 jour 3 après-midi : DAG testés, panne de MLflow réparée par les nouvelles tentatives, données invalides
 arrêtées par le contrat, rattrapage de janvier 2024, déclenchement par l'Asset. Les deux scripts
-échouent si un chiffre diffère de celui du support.
+échouent si un chiffre diffère de celui du support. Le premier rejoue aussi, quand les pages du
+support sont copiées dans `verification/support/`, les cellules du jour 4 : empreinte des modèles,
+recherche Optuna tracée dans MLflow, service PyFunc servi en HTTP.

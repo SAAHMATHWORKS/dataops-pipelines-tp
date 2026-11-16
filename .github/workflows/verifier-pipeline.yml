@@ -8,6 +8,7 @@ on:
     paths:
       - "colisvert/**"
       - "pipeline/**"
+      - "service/**"
       - "solutions/**"
       - "verification/**"
       - "docker/airflow/**"
@@ -25,7 +26,7 @@ jobs:
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
-      - name: Rejouer les jours 1 à 3 matin dans l'image des TP
+      - name: Rejouer les jours 1 à 4 dans l'image des TP (hors Airflow)
         run: |
           set -o pipefail
           # Avec l'UID de l'utilisateur et son identité, comme sur la VM (docker-compose.yml).

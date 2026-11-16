@@ -7,7 +7,8 @@ Variables d'environnement facultatives :
 - SAUTER : expression régulière ; les blocs dont le code y correspond ne sont pas exécutés ;
 - AVANT_BLOC : "motif du titre::commande" (plusieurs règles séparées par ;;) ;
 - GARDER_DATA : ne pas effacer le dossier data/ à la fin.
-Les identifiants de runs MLflow (32 caractères hexadécimaux) et les durées en secondes sont neutralisés avant comparaison.
+Les identifiants de runs MLflow (32 caractères hexadécimaux) et les durées (« 0.13 s », « 7.30 ms ») sont neutralisés avant comparaison.
+Les blocs dont le titre contient « ne pas exécuter » ou « (extrait » ne sont pas exécutés.
 """
 import contextlib
 import io
@@ -38,7 +39,7 @@ for fichier in fichiers:
             if attente and attente[2].strip():
                 print(f"[sans sortie attendue] {attente[0]} · {attente[1]}\n{attente[2]}")
             sauter = os.environ.get("SAUTER")
-            if "ne pas exécuter" in info or (sauter and re.search(sauter, code)):
+            if "ne pas exécuter" in info or "(extrait" in info or (sauter and re.search(sauter, code)):
                 if sauter and re.search(sauter, code):
                     print("[sauté]", info.strip())
                 attente = None
@@ -60,8 +61,8 @@ for fichier in fichiers:
             attente = (fichier.name, titre, sortie.getvalue())
         elif langue == "plaintext" and "Sortie attendue" in info and attente:
             nom, titre, obtenu = attente
-            # Les identifiants de runs MLflow et les durées (« 0.13 s ») varient d'une exécution à l'autre.
-            norm = lambda t: "\n".join(re.sub(r"\b\d+\.\d+ s\b", "<durée> s", re.sub(r"\b[0-9a-f]{32}\b", "<id>", l)).rstrip() for l in t.strip("\n").splitlines())
+            # Les identifiants de runs MLflow et les durées (« 0.13 s », « 7.30 ms ») varient d'une exécution à l'autre.
+            norm = lambda t: "\n".join(re.sub(r"\b\d+\.\d+ (m?s)\b", r"<durée> \1", re.sub(r"\b[0-9a-f]{32}\b", "<id>", l)).rstrip() for l in t.strip("\n").splitlines())
             if norm(obtenu) != norm(code):
                 erreurs += 1
                 print(f"\n=== DIFFÉRENCE · {nom} · {titre}\n--- attendu\n{code}--- obtenu\n{obtenu}")

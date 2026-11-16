@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rejoue le parcours des jours 1 à 3 dans l'image des TP, avec un vrai serveur MLflow,
+# Rejoue le parcours des jours 1 à 4 dans l'image des TP, avec un vrai serveur MLflow,
 # et vérifie les chiffres annoncés dans le support. Lancé par GitHub Actions
 # (.github/workflows/verifier-pipeline.yml), ou à la main, depuis la racine du dépôt :
 #
@@ -245,6 +245,13 @@ support $SUPPORT/j3-matin/06-*.md
 
 titre "Jour 4 matin : cellules du support (indépendantes de l'état du dépôt)"
 support $SUPPORT/j4-matin/index.md $SUPPORT/j4-matin/0[1-6]-*.md
+
+titre "Jour 4 après-midi : empreinte, Optuna et service PyFunc (cellules du support)"
+# Noms propres au jour 4 (expérience j4-empreinte, modèles colisvert-empreinte et colisvert-service) :
+# les cellules ne dépendent pas de l'état du registre laissé par les jours 2 et 3.
+export AVANT_BLOC="Cellule 17::bash verification/servir_service.sh"
+support $SUPPORT/j4-apres-midi/index.md $SUPPORT/j4-apres-midi/0[1-6]-*.md
+unset AVANT_BLOC
 
 titre "Registre en fin de parcours"
 python - <<'PY'

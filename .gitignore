@@ -12,3 +12,5 @@ rapports/
 .mlflow/
 .airflow/
 mlruns/
+# Jour 4 : journal des prédictions en ombre du service de prédiction
+journal/
