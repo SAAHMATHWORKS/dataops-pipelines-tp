@@ -34,9 +34,9 @@ grille = [(C, cw, score(C, cw)) for C in [0.01, 0.1, 1.0, 10.0] for cw in [None,
 for ligne in grille:
     print(ligne)
 attendu_grille = [
-    (0.01, None, 0.545), (0.01, "balanced", 0.588),
-    (0.1, None, 0.599), (0.1, "balanced", 0.634),
-    (1.0, None, 0.597), (1.0, "balanced", 0.634),
+    (0.01, None, 0.508), (0.01, "balanced", 0.566),
+    (0.1, None, 0.62), (0.1, "balanced", 0.618),
+    (1.0, None, 0.607), (1.0, "balanced", 0.629),
     (10.0, None, 0.597), (10.0, "balanced", 0.632),
 ]
 assert grille == attendu_grille, "la grille ne correspond plus au support"
@@ -47,11 +47,9 @@ tirages = list(ParameterSampler({"C": loguniform(1e-3, 1e2), "class_weight": [No
 aleatoire = [(round(float(t["C"]), 4), t["class_weight"], score(t["C"], t["class_weight"])) for t in tirages]
 for ligne in aleatoire:
     print(ligne)
-# Relevé dans l'image des TP (x86-64) : deux valeurs diffèrent au millième sur d'autres
-# machines (convergence de l'optimiseur sensible aux bibliothèques de calcul).
 attendu_aleatoire = [
-    (0.0746, None, 0.61), (0.0083, "balanced", 0.582), (0.9847, None, 0.597), (0.1695, None, 0.603),
-    (0.002, "balanced", 0.523), (0.0466, "balanced", 0.613), (3.4703, "balanced", 0.634), (0.0019, "balanced", 0.523),
+    (0.0746, None, 0.627), (0.0083, "balanced", 0.567), (0.9847, None, 0.607), (0.1695, None, 0.613),
+    (0.002, "balanced", 0.454), (0.0466, "balanced", 0.608), (3.4703, "balanced", 0.632), (0.0019, "balanced", 0.45),
 ]
 assert aleatoire == attendu_aleatoire, "le tirage aléatoire ne correspond plus au support"
 print("tirage aléatoire conforme au support")

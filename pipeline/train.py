@@ -1,9 +1,15 @@
 """Étape 2 du pipeline : entraîner le modèle de prédiction des retards.
 
-Le modèle est une régression logistique précédée d'un encodage un-parmi-n
-(one-hot) des variables catégorielles. Le tout est un Pipeline scikit-learn :
-l'encodage appris sur le train s'applique tel quel à toute donnée future,
-et le fichier modele.joblib contient l'ensemble.
+Le modèle est une régression logistique précédée d'une préparation des variables :
+encodage un-parmi-n (one-hot) des catégories, et standardisation des nombres
+(moyenne 0, écart-type 1). Le tout est un Pipeline scikit-learn : la préparation
+apprise sur le train s'applique telle quelle à toute donnée future, et le fichier
+modele.joblib contient l'ensemble.
+
+Pourquoi standardiser ? Sans cela, la distance (jusqu'à 300 km) écrase les autres
+variables : l'optimiseur converge lentement (des centaines d'itérations) et son
+résultat varie au millième selon le processeur. Standardisées, toutes les variables
+ont la même échelle : la convergence est rapide et le résultat identique partout.
 
 Usage : python -m pipeline.train
 """
@@ -16,18 +22,22 @@ from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from . import suivi
 from .commun import CATEGORIELLES, CIBLE, MODELS, NUMERIQUES, PREPARE, charger_params
 
 
-def construire_modele(C: float, class_weight, max_iter: int) -> Pipeline:
-    """Encodage un-parmi-n des catégories + régression logistique."""
-    encodage = ColumnTransformer(
-        [("categories", OneHotEncoder(handle_unknown="ignore"), CATEGORIELLES)],
-        remainder="passthrough",  # les colonnes numériques passent telles quelles
-    )
+def construire_modele(C: float, class_weight, max_iter: int, numeriques: list[str] = NUMERIQUES) -> Pipeline:
+    """Encodage un-parmi-n des catégories, standardisation des nombres, régression logistique.
+
+    numeriques : les colonnes numériques à utiliser (par défaut, celles du pipeline) ;
+    on en ajoute une dans la démonstration de la fuite de données.
+    """
+    encodage = ColumnTransformer([
+        ("categories", OneHotEncoder(handle_unknown="ignore"), CATEGORIELLES),
+        ("nombres", StandardScaler(), numeriques),
+    ])
     modele = LogisticRegression(C=C, class_weight=class_weight, max_iter=max_iter, random_state=2026)
     return Pipeline([("encodage", encodage), ("regression", modele)])
 
