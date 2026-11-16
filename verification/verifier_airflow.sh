@@ -50,11 +50,12 @@ attendre() {
 
 rattraper() {
   # rattraper <arguments de airflow backfill create> : relance tant qu'un rattrapage précédent
-  # du même DAG n'est pas clos (« Another backfill is running »), au plus 3 minutes.
+  # du même DAG n'est pas clos (« Another backfill is running ») ou que la base SQLite est
+  # occupée (« database is locked »), au plus 3 minutes.
   local debut=$(date +%s) sortie
   for _ in $(seq 1 36); do
     sortie=$(af airflow backfill create "$@" 2>&1)
-    if ! grep -q "AlreadyRunningBackfill" <<<"$sortie"; then
+    if ! grep -qE "AlreadyRunningBackfill|database is locked" <<<"$sortie"; then
       echo "$sortie" | grep -vE "^\s*$" | tail -6
       echo "(rattrapage accepté après $(( $(date +%s) - debut )) s d'attente)"
       return 0

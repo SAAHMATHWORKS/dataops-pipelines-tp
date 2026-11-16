@@ -62,6 +62,9 @@ services:
     environment:
       HOME: /home/lab/projet/.home
       AIRFLOW_HOME: /home/lab/projet/.airflow
+      # Base SQLite : attendre jusqu'à 30 s qu'elle se libère (5 s par défaut), car l'ordonnanceur,
+      # les tâches et vos commandes y écrivent en même temps. En production : PostgreSQL.
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "sqlite:////home/lab/projet/.airflow/airflow.db?timeout=30"
       AIRFLOW__CORE__DAGS_FOLDER: /home/lab/projet/dags
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
       # Pas d'identifiant à saisir : le port n'est ouvert que sur la VM elle-même (127.0.0.1).
