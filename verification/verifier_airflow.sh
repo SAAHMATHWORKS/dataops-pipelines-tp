@@ -166,6 +166,7 @@ docker compose run --rm -T jupyter bash -c "dvc checkout --force data/livraisons
 
 titre "Notion 4 : un jour de taxis, puis le rattrapage de janvier 2024"
 cp solutions/airflow/taxis_journalier.py dags/
+af airflow dags reserialize >/dev/null 2>&1   # comme attendre que le processeur de DAG lise le fichier
 af airflow dags list-import-errors
 af airflow dags unpause taxis_journalier
 sleep 10
@@ -229,6 +230,7 @@ af airflow dags pause colisvert_reception
 
 titre "Évaluation : le DAG taxis_qualite"
 cp solutions/airflow/evaluation/taxis_qualite.py dags/
+af airflow dags reserialize >/dev/null 2>&1
 af airflow dags list-import-errors
 af airflow dags unpause taxis_qualite
 sleep 10
