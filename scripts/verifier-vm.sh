@@ -68,7 +68,7 @@ verifier_url "Données des taxis de New York (jour 3)" https://d37ci6vzurychx.cl
 verifier_url "Docker Hub"             https://registry-1.docker.io/v2/
 verifier_url "PyPI"                   https://pypi.org/simple/pip/
 verifier_url "Fichiers PyPI"          https://files.pythonhosted.org/
-verifier_url "Maven Central"          https://repo1.maven.org/maven2/
+verifier_url "Maven Central (Delta Lake, jour 5)" https://repo1.maven.org/maven2/
 verifier_url "Plateforme Training Lab" https://m2i-training-lab.kbc-sarl.com
 echo
 

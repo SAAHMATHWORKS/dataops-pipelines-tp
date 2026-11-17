@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rejoue le parcours des jours 1 à 4 dans l'image des TP, avec un vrai serveur MLflow,
+# Rejoue le parcours des jours 1 à 5 dans l'image des TP, avec un vrai serveur MLflow,
 # et vérifie les chiffres annoncés dans le support. Lancé par GitHub Actions
 # (.github/workflows/verifier-pipeline.yml), ou à la main, depuis la racine du dépôt :
 #
@@ -253,6 +253,10 @@ titre "Jour 4 après-midi : empreinte, Optuna et service PyFunc (cellules du sup
 export AVANT_BLOC="Cellule 17::bash verification/servir_service.sh"
 support $SUPPORT/j4-apres-midi/index.md $SUPPORT/j4-apres-midi/0[1-6]-*.md
 unset AVANT_BLOC
+
+titre "Jour 5 matin : gouvernance, Delta Lake avec Spark, IA responsable (cellules du support)"
+# Noms propres au jour 5 (lakehouse/, expérience j5-ia-responsable) : indépendant de l'état du dépôt.
+support $SUPPORT/j5-matin/index.md $SUPPORT/j5-matin/0[1-6]-*.md
 
 titre "Registre en fin de parcours"
 python - <<'PY'
