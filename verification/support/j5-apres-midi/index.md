@@ -21,13 +21,11 @@
 cd /home/lab/projet
 git switch tp-dvc
 git pull --no-rebase --no-edit origin main
-ls colisvert
+ls colisvert/llm_simule.py
 ```
 
 ```plaintext title="Sortie attendue (ls)"
-__init__.py
-donnees.py
-llm_simule.py
+colisvert/llm_simule.py
 ```
 
 **2. Dans un terminal de la VM**, vérifiez que JupyterLab et MLflow tournent :

@@ -488,7 +488,14 @@ tests de la boucle d'agent : réussis
 **Les traces.** Chaque appel du rédacteur et de l'agent a été tracé dans l'expérience `j5-agents` :
 
 ```python title="Cellule 13 : les traces de l'agent"
-derniere = mlflow.get_trace(mlflow.get_last_active_trace_id())
+import time
+
+trace_id = mlflow.get_last_active_trace_id()
+for _ in range(20):            # les traces partent vers le serveur MLflow en arrière-plan : on attend la dernière
+    derniere = mlflow.get_trace(trace_id)
+    if derniere is not None:
+        break
+    time.sleep(0.5)
 print([span.name for span in derniere.data.spans])
 experience = mlflow.get_experiment_by_name("j5-agents")
 print(f"{len(mlflow.search_traces(locations=[experience.experiment_id]))} traces dans j5-agents")
