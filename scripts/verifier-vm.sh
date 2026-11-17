@@ -70,6 +70,14 @@ verifier_url "PyPI"                   https://pypi.org/simple/pip/
 verifier_url "Fichiers PyPI"          https://files.pythonhosted.org/
 verifier_url "Maven Central (Delta Lake, jour 5)" https://repo1.maven.org/maven2/
 verifier_url "Plateforme Training Lab" https://m2i-training-lab.kbc-sarl.com
+# Jour 5 : la passerelle LLM doit répondre en JSON (401 sans jeton), pas par une page de vérification HTML.
+REPONSE_LLM=$(curl -sS -m 15 -w "\n%{http_code}" https://m2i-training-lab.kbc-sarl.com/api/llm/v1/quota 2>/dev/null)
+case "$(tail -1 <<<"$REPONSE_LLM")" in
+  401) grep -q jeton_manquant <<<"$REPONSE_LLM" && ok "Passerelle LLM (jour 5) : répond en JSON (401 sans jeton, c'est normal)" \
+         || ko "Passerelle LLM (jour 5) : 401 sans le JSON attendu" ;;
+  403) ko "Passerelle LLM (jour 5) : 403, sans doute une page de vérification de Cloudflare (règle WAF à ajouter pour /api/llm/)" ;;
+  *)   ko "Passerelle LLM (jour 5) : réponse inattendue ($(tail -1 <<<"$REPONSE_LLM"))" ;;
+esac
 echo
 
 echo "5. Téléchargements réels"

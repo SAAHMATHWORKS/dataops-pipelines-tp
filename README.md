@@ -27,7 +27,7 @@ machine elle-même (`127.0.0.1`) : JupyterLab ne demande donc pas de jeton.
 
 | Dossier | Rôle |
 |---|---|
-| `colisvert/` | Le générateur des données du fil rouge (septembre-octobre, puis décembre) |
+| `colisvert/` | Le générateur des données du fil rouge (septembre-octobre, puis décembre) ; jour 5 : le LLM simulé (`llm_simule.py`), une doublure de la passerelle LLM pour tester les agents sans réseau |
 | `pipeline/` | Jour 2 : les étapes du pipeline (`prepare`, `train`, `evaluate`), le suivi MLflow et le point d'entrée du projet MLflow ; jour 3 : le contrat de données, l'enregistrement du challenger, les scripts quotidiens des taxis |
 | `dags/` | Jour 3 : vos DAG Airflow |
 | `solutions/airflow/` | Jour 3 : les corrigés des DAG |
@@ -84,4 +84,5 @@ jour 3 après-midi : DAG testés, panne de MLflow réparée par les nouvelles te
 arrêtées par le contrat, rattrapage de janvier 2024, déclenchement par l'Asset. Les deux scripts
 échouent si un chiffre diffère de celui du support. Le premier rejoue aussi, quand les pages du
 support sont copiées dans `verification/support/`, les cellules du jour 4 : empreinte des modèles,
-recherche Optuna tracée dans MLflow, service PyFunc servi en HTTP.
+recherche Optuna tracée dans MLflow, service PyFunc servi en HTTP ; et du jour 5 : Delta Lake avec Spark,
+explicabilité, puis le TP sur les LLM et les agents, joué contre le LLM simulé à la place de la passerelle.

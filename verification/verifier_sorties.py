@@ -9,6 +9,8 @@ Variables d'environnement facultatives :
 - GARDER_DATA : ne pas effacer le dossier data/ à la fin.
 Les identifiants de runs MLflow (32 caractères hexadécimaux) et les durées (« 0.13 s », « 7.30 ms ») sont neutralisés avant comparaison.
 Les blocs dont le titre contient « ne pas exécuter » ou « (extrait » ne sont pas exécutés.
+Les blocs « Sortie avec le LLM simulé » sont comparés comme les « Sortie attendue » : la vérification
+fait tourner le LLM simulé (colisvert/llm_simule.py) à la place du vrai LLM.
 """
 import contextlib
 import io
@@ -59,7 +61,7 @@ for fichier in fichiers:
                 except Exception:
                     traceback.print_exc(file=sys.stdout)
             attente = (fichier.name, titre, sortie.getvalue())
-        elif langue == "plaintext" and "Sortie attendue" in info and attente:
+        elif langue == "plaintext" and ("Sortie attendue" in info or "LLM simulé" in info) and attente:
             nom, titre, obtenu = attente
             # Les identifiants de runs MLflow et les durées (« 0.13 s », « 7.30 ms ») varient d'une exécution à l'autre.
             norm = lambda t: "\n".join(re.sub(r"\b\d+\.\d+ (m?s)\b", r"<durée> \1", re.sub(r"\b[0-9a-f]{32}\b", "<id>", l)).rstrip() for l in t.strip("\n").splitlines())

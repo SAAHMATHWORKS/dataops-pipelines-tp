@@ -258,6 +258,17 @@ titre "Jour 5 matin : gouvernance, Delta Lake avec Spark, IA responsable (cellul
 # Noms propres au jour 5 (lakehouse/, expérience j5-ia-responsable) : indépendant de l'état du dépôt.
 support $SUPPORT/j5-matin/index.md $SUPPORT/j5-matin/0[1-6]-*.md
 
+titre "Jour 5 après-midi : LLM et agents, contre le LLM simulé (cellules du support)"
+# Le TP appelle la passerelle LLM de Training Lab ; ici, le LLM simulé du dépôt la remplace
+# (même adresse en /api/llm/v1, mêmes refus), et les sorties « avec le LLM simulé » sont comparées.
+python -m colisvert.llm_simule --port 8090 > /tmp/llm-simule.log 2>&1 &
+LLM_SIMULE=$!
+for _ in $(seq 1 30); do curl -s -o /dev/null http://127.0.0.1:8090/api/llm/v1/quota && break; sleep 1; done
+export LLM_PASSERELLE=http://127.0.0.1:8090/api/llm/v1 LLM_JETON=jeton-de-la-verification
+support $SUPPORT/j5-apres-midi/index.md $SUPPORT/j5-apres-midi/0[1-8]-*.md
+unset LLM_PASSERELLE LLM_JETON
+kill "$LLM_SIMULE" 2>/dev/null || true
+
 titre "Registre en fin de parcours"
 python - <<'PY'
 from mlflow import MlflowClient
