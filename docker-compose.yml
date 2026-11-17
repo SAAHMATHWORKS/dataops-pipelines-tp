@@ -74,7 +74,9 @@ services:
       # Une seule couche de nouvelles tentatives : celle d'Airflow, visible dans l'interface.
       # (Par défaut, le client MLflow réessaie seul pendant plusieurs minutes.)
       MLFLOW_HTTP_REQUEST_MAX_RETRIES: "1"
-    command: airflow standalone
+    # « airflow standalone », surveillé : si son planificateur s'arrête, le conteneur redémarre
+    # (voir scripts/airflow-surveille.sh).
+    command: bash /home/lab/projet/scripts/airflow-surveille.sh
     volumes:
       - .:/home/lab/projet
       # L'identité de l'utilisateur de la VM (écrite par scripts/identite.sh) : sans elle,

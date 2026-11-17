@@ -13,10 +13,29 @@ SUPPORT=verification/support
 ECHECS=0
 ECHECS_CELLULES=0   # comptées à part : une sortie de cellule fausse n'empêche pas la suite
 echec() { echo "ÉCHEC : $*"; ECHECS=$((ECHECS + 1)); }
+planificateur() {
+  # planificateur actif|arreter : teste la présence du planificateur d'Airflow, ou l'arrête.
+  af bash -c 'for p in /proc/[0-9]*; do
+    if tr "\0" " " 2>/dev/null < $p/cmdline | grep -q "bin/airflow schedule[r]"; then
+      [ "$0" = arreter ] && kill ${p#/proc/}; exit 0
+    fi
+  done; exit 1' "$1" 2>/dev/null
+}
+diagnostic() {
+  # Ce qu'il faut pour comprendre un run bloqué : états des runs, journal du planificateur, erreurs.
+  echo "--- états des runs de taxis_journalier"
+  docker compose exec -T airflow airflow dags list-runs taxis_journalier -o plain 2>/dev/null | awk '{print $3}' | sort | uniq -c
+  echo "--- processus Airflow"
+  docker compose exec -T airflow sh -c 'for p in /proc/[0-9]*; do tr "\0" " " < $p/cmdline 2>/dev/null; echo; done | grep -i airflow | cut -c1-120 | sort | uniq -c'
+  echo "--- erreurs du conteneur"
+  docker compose logs airflow 2>&1 | grep -iE "traceback|locked|error|exception|exited|killed|terminat" | grep -v "SIMPLE_AUTH\|login" | tail -60
+  echo "--- planificateur (fin)"
+  docker compose logs airflow 2>&1 | grep -E "\| scheduler" | tail -60
+}
 titre() {
   # Arrêt dès le premier échec : les étapes suivantes en dépendent, et leurs attentes seraient longues.
   if [ "$ECHECS" -gt 0 ]; then
-    echo; echo "ARRÊT après $ECHECS échec(s)."; docker compose logs airflow 2>&1 | tail -60; exit 1
+    echo; echo "ARRÊT après $ECHECS échec(s)."; diagnostic; exit 1
   fi
   echo; echo "=================== $*"
 }
@@ -51,12 +70,12 @@ attendre() {
 
 rattraper() {
   # rattraper <arguments de airflow backfill create> : relance tant qu'un rattrapage précédent
-  # du même DAG n'est pas clos (« Another backfill is running ») ou que la base SQLite est
-  # occupée (« database is locked »), au plus 3 minutes.
+  # du même DAG n'est pas clos (« Another backfill is running »), que la base SQLite est
+  # occupée (« database is locked ») ou que le conteneur redémarre, au plus 3 minutes.
   local debut=$(date +%s) sortie
   for _ in $(seq 1 36); do
     sortie=$(af airflow backfill create "$@" 2>&1)
-    if ! grep -qE "AlreadyRunningBackfill|database is locked" <<<"$sortie"; then
+    if ! grep -qE "AlreadyRunningBackfill|database is locked|is restarting|is not running" <<<"$sortie"; then
       echo "$sortie" | grep -vE "^\s*$" | tail -6
       echo "(rattrapage accepté après $(( $(date +%s) - debut )) s d'attente)"
       return 0
@@ -180,6 +199,9 @@ echo "--- le mois entier, à blanc"
 af airflow backfill create --dag-id taxis_journalier --from-date 2024-01-01 --to-date 2024-01-31 --dry-run 2>&1 | grep -vE "^\s*$" > /tmp/dry.txt
 head -14 /tmp/dry.txt; echo "[…]"; tail -4 /tmp/dry.txt; echo "lignes : $(wc -l < /tmp/dry.txt)"
 echo "--- le mois entier"
+# On reproduit la panne observée en vérification : le planificateur s'arrête juste avant le
+# rattrapage. scripts/airflow-surveille.sh doit relancer le conteneur, et les 30 runs reprendre.
+planificateur arreter && echo "(planificateur arrêté volontairement)"
 debut=$(date +%s)
 rattraper --dag-id taxis_journalier --from-date 2024-01-01 --to-date 2024-01-31 --max-active-runs 4 || echec "taxis : rattrapage du mois refusé"
 for _ in $(seq 1 120); do
@@ -188,6 +210,8 @@ for _ in $(seq 1 120); do
   sleep 5
 done
 echo "rattrapage terminé en $(( $(date +%s) - debut )) s"
+planificateur actif && echo "planificateur actif"
+docker compose logs airflow 2>&1 | grep -c "SURVEILLANCE : le planificateur" | sed 's/^/redémarrages par la surveillance : /'
 echo "runs réussis : $(runs taxis_journalier resume | grep -c state=success)"
 [ "$(ls rapports/taxis | wc -l)" -eq 31 ] || echec "taxis : 31 partitions attendues"
 ls rapports/taxis | head -3; ls rapports/taxis | wc -l
