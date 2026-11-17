@@ -205,8 +205,9 @@ planificateur arreter && echo "(planificateur arrêté volontairement)"
 debut=$(date +%s)
 rattraper --dag-id taxis_journalier --from-date 2024-01-01 --to-date 2024-01-31 --max-active-runs 4 || echec "taxis : rattrapage du mois refusé"
 for _ in $(seq 1 120); do
-  restants=$(runs taxis_journalier resume | grep -cE "state=(queued|running)")
-  [ "$restants" -eq 0 ] && break
+  # Pendant un redémarrage du conteneur, la commande échoue et ne renvoie rien : on attend encore.
+  etats=$(runs taxis_journalier resume 2>/dev/null)
+  if [ -n "$etats" ] && ! grep -qE "state=(queued|running)" <<<"$etats"; then break; fi
   sleep 5
 done
 echo "rattrapage terminé en $(( $(date +%s) - debut )) s"
